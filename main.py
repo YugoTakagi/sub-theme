@@ -8,12 +8,6 @@ from tensorflow.keras import datasets, layers, models
 
 
 def main():
-    ''' Load dataset
-        - テストは，一人データ抜き交差検定を行う．
-        (テストデータに一人分のデータを使い，全ての人のデータがテストデータになるようにする．)
-        - 人数分の回数実験を行い，平均精度を報告．
-    '''
-
     # データセットで使う要素を指定．
     target_label = 'SS_ternary'
     # target_label = 'TC_ternary'
@@ -27,65 +21,23 @@ def main():
                         'SS', 'TC1', 'TC2', 'TC3', 'TC4', 'TC5', \
                         'TS1', 'TS2', 'TS3', 'TS4', 'TS5']
 
+    # データセットを読み込む．
+    dataset = Dataset()
+    dataset.load_csvs(lst, target_label, drop_labels)
 
-    # 全ての人のデータを読み込む．
-    df = pd.DataFrame()
-    # df = pd.concat([pd.read_csv(i) for i in lst])
-    df = pd.concat([pd.read_csv(i) for i in lst], ignore_index=True)
-    # print(df)
-
-    # ターゲットラベルを分離．
-    df_labels = df[target_label]
-
-    # 不要な要素を削除．
-    df = df.drop(columns=drop_labels) 
-    df = df.drop(columns=target_label) 
-
-    # 読み込んだデータを列ごとにz化（標準化：平均0，分散1）
-    df = scipy.stats.zscore(df)
-    # print(df)
-
-    # NaNがある列を削除．
-    # df.isna().all()
-    df = df.dropna(axis='columns')
-    # print(df)
-
-    # テストデータとトレーニングデータを分ける．
-    ## 各ファイルのインデックスを取得する．
-    sub_top = 0
-    sub_bottom = -1
-    im_list = []
-    for file_nema in lst:
-        sub_df = pd.read_csv(file_nema)
-        sub_top = sub_bottom + 1
-        sub_bottom += len(sub_df)
-        im_list.append([sub_top, sub_bottom])
-
-
-
-    # top行目からbottom行目を取り出す．
     sum_acc = 0
     for i in range(len(lst)):
-        # i = 2
-        top = im_list[i][0]
-        bottom = im_list[i][1]
-
-        test_datas = df[top:bottom].values
-        test_datas = test_datas.reshape(int(test_datas.size/test_datas[0].size), test_datas[0].size, 1, 1)
-        test_labels = df_labels[top:bottom].values
-
-        train_datas = df.drop([top,bottom]).values
+        train_datas, train_labels = dataset.get_traindatas(i)
         train_datas = train_datas.reshape(int(train_datas.size/train_datas[0].size), train_datas[0].size, 1, 1)
-        train_labels = df_labels.drop([top,bottom]).values
 
+        test_datas, test_labels = dataset.get_testdatas(i)
+        test_datas = test_datas.reshape(int(test_datas.size/test_datas[0].size), test_datas[0].size, 1, 1)
 
-        # print(train_labels)
-        # print(train_datas)
         print('train_datas.shape =', train_datas.shape)
         print('train_labels.shape =', train_labels.shape)
 
 
-        input_size = len(df.columns)
+        input_size = len(dataset.df.columns)
         # input_size = len(df.index)
         print(input_size)
 
@@ -110,8 +62,7 @@ def main():
         model.add(layers.Dense(1, activation='sigmoid'))
         # model.add(layers.Dense(3, activation='sigmoid'))
 
-        model.summary()
-
+        # model.summary()
 
         #@brier Compile model and Learning
         model.compile(optimizer='adam',
@@ -126,10 +77,6 @@ def main():
 
 
         model.fit(train_datas, train_labels, epochs=15)
-
-
-        # test_csv_file = "./Hazumi1902-master/dumpfiles/1902F7001.csv"
-        # test_datas, test_labels, test_col_size, test_row_size = LoadDataSet(test_csv_file)
 
         test_loss, test_acc = model.evaluate(test_datas,  test_labels, verbose=2)
 
@@ -165,6 +112,71 @@ lst = ["../ws/Hazumi1902-master/dumpfiles/1902F2001.csv",
        "../ws/Hazumi1902-master/dumpfiles/1902M5003.csv",
        "../ws/Hazumi1902-master/dumpfiles/1902M7001.csv",
        "../ws/Hazumi1902-master/dumpfiles/1902M7002.csv"]
+
+class Dataset:
+    ''' Load dataset
+        - テストは，一人データ抜き交差検定を行う．
+        (テストデータに一人分のデータを使い，全ての人のデータがテストデータになるようにする．)
+        - 人数分の回数実験を行い，平均精度を報告．
+    '''
+    def load_csvs(self, lst, target_label, drop_labels) -> None:
+        # 全ての人のデータを読み込む．
+        df = pd.DataFrame()
+        # df = pd.concat([pd.read_csv(i) for i in lst])
+        df = pd.concat([pd.read_csv(i) for i in lst], ignore_index=True)
+        # print(df)
+
+        # ターゲットラベルを分離．
+        self.df_labels = df[target_label]
+
+        # 不要な要素を削除．
+        df = df.drop(columns=drop_labels) 
+        df = df.drop(columns=target_label) 
+
+        # 読み込んだデータを列ごとにz化（標準化：平均0，分散1）
+        df = scipy.stats.zscore(df)
+        # print(df)
+
+        # NaNがある列を削除．
+        # df.isna().all()
+        self.df = df.dropna(axis='columns')
+        # print(df)
+
+        # テストデータとトレーニングデータを分ける．
+        ## 各ファイルのインデックスを取得する．
+        sub_top = 0
+        sub_bottom = -1
+        self.im_list = []
+        for file_nema in lst:
+            sub_df = pd.read_csv(file_nema)
+            sub_top = sub_bottom + 1
+            sub_bottom += len(sub_df)
+            self.im_list.append([sub_top, sub_bottom])
+
+    def get_testdatas(self, i):
+        ''' テストデータを取得する．なお，i番目のファイルをテストデータとする．
+            (top行目からbottom行目を取り出す．)
+        '''
+        top = self.im_list[i][0]
+        bottom = self.im_list[i][1]
+
+        test_datas = self.df[top:bottom].values
+        test_labels = self.df_labels[top:bottom].values
+
+        return test_datas, test_labels
+    
+    def get_traindatas(self, i):
+        ''' トレーニングデータを取得する．なお，i番目のファイルをテストデータとする．
+            (top行目からbottom行目を取り出す．)
+        '''
+        top = self.im_list[i][0]
+        bottom = self.im_list[i][1]
+
+        train_datas = self.df.drop([top,bottom]).values
+        train_labels = self.df_labels.drop([top,bottom]).values
+
+        return train_datas, train_labels
+
 
 if __name__ == '__main__':
     main()
