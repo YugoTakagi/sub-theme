@@ -6,8 +6,24 @@ import scipy.stats
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models, optimizers, losses
 
+from test_dataload import OkadaDataSet
 
 def main():
+    print('hello')
+    okada_data_set = OkadaDataSet(lst, target_label, drop_labels)
+    # train_setumei, train_mokuteki = okada_data_set.get_traindatas(i=0)
+    # train_setumei.drop()
+    mokuteki = okada_data_set.mokuteki
+    print('mokuteki.shape:', mokuteki.shape)
+    top = 100
+    bottom = 199
+    # mokuteki = mokuteki.drop([top,bottom])
+    print('mokuteki.drop([top,bottom]).shape:', mokuteki.drop([top,bottom]).shape)
+    print('range(top,bottom):', range(top,bottom))
+    print('mokuteki.drop(range(top,bottom)).shape:', mokuteki.drop(range(top,bottom)).shape)
+
+
+def _main():
     # データセットで使う要素を指定．
     target_label = 'SS_ternary'
     # target_label = 'TC_ternary'
@@ -150,6 +166,16 @@ class MyCNN:
         return self.model
 
 
+# データセットのラベルを設定．
+target_label = 'SS_ternary'
+drop_labels = ['start(exchange)[ms]', 'end(system)[ms]', 'end(exchange)[ms]', \
+                'kinectstart(exchange)[ms]', 'kinectend(system)[ms]', 'kinectend(exchange)[ms]', \
+                'SS_ternary', \
+                'TC_ternary', \
+                'TS_ternary', \
+                'SS', 
+                'TC1', 'TC2', 'TC3', 'TC4', 'TC5', \
+                'TS1', 'TS2', 'TS3', 'TS4', 'TS5']
 
 # データセットに読み込むファイル名．
 lst = ["../ws/Hazumi1902-master/dumpfiles/1902F2001.csv",

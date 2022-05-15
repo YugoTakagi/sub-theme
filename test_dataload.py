@@ -22,6 +22,8 @@ from tensorflow.keras.optimizers import RMSprop
 
 import scipy.stats
 from keras.utils import np_utils #Numpyユーティリティのインポート
+from tensorflow.keras import datasets, layers, models, optimizers, losses
+
 
 
 def main():
@@ -41,15 +43,22 @@ def main():
         # print('setumei_size:', train_setumei.shape[1])
         setumei_size = train_setumei.shape[1]
 
-
+        # > MLP
         mynn = MyNN(setumei_size)
         model = mynn.getModel()
+
+        # > CNN
+        # mycnn = MyCNN(setumei_size)
+        # model = mycnn.getModel()
+        # train_setumei = train_setumei.reshape(int(train_setumei.size/train_setumei[0].size), train_setumei[0].size, 1, 1)
+        # test_setumei = test_setumei.reshape(int(test_setumei.size/test_setumei[0].size), test_setumei[0].size, 1, 1)
 
 
         #ニューラルネットワークの学習
         # history = model.fit(x_train, y_train, batch_size=200,epochs=1000,verbose=1,validation_data=(x_test, y_test))
-        # history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=1000, verbose=1, validation_data=(test_setumei, test_mokuteki))
-        history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=1000)
+        history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=1000, verbose=1, validation_data=(test_setumei, test_mokuteki))
+        # history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=1000)
+        # history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=200)
 
         #ニューラルネットワークの推論
         # score = model.evaluate(x_test,y_test,verbose=1)
@@ -96,6 +105,40 @@ class MyNN:
         return self.model
 
 
+class MyCNN:
+    def __init__(self, input_size):
+        #@brief Criate fundamental model of CNN
+        self.model = models.Sequential()
+        self.model.add(layers.Conv2D(32, (3, 1), activation='relu', input_shape=(input_size, 1, 1)))
+        self.model.add(layers.MaxPooling2D((2, 1)))
+        self.model.add(layers.Conv2D(64, (3, 1), activation='relu'))
+        self.model.add(layers.MaxPooling2D((2, 1)))
+        self.model.add(layers.Conv2D(64, (3, 1), activation='relu'))
+
+        self.model.add(layers.MaxPooling2D((2, 1)))
+        self.model.add(layers.Conv2D(64, (3, 1), activation='relu'))
+
+        # By using layers.Flatten(), Convert tensor to scoler
+        self.model.add(layers.Flatten())
+        self.model.add(layers.Dense(64, activation='relu'))
+        self.model.add(layers.Dense(10, activation='softmax'))
+        self.model.add(layers.Dense(10, activation='relu'))
+        self.model.add(layers.Dense(3, activation='softmax'))
+
+        #@brier Compile model and Learning
+        self.model.compile(optimizer='adam',
+                    #   loss='sparse_categorical_crossentropy',
+                    loss='mean_squared_error',
+                    #   loss='mean_absolute_error',
+                    #   loss='mean_absolute_percentage_error',
+                    #   loss='mean_squared_logarithmic_error',
+                    #   loss='kullback_leibler_divergence',
+                    # loss='binary_crossentropy',
+                    metrics=['accuracy'])
+
+    
+    def getModel(self):
+        return self.model
 
 
 
@@ -119,7 +162,6 @@ class OkadaDataSet:
         self.setumei = scipy.stats.zscore(self.setumei)
         ### NaNがある列を削除．
         self.setumei = self.setumei.dropna(axis='columns')
-
         print("-----説明変数--------")
         print('shape:', self.setumei.shape)
         print(self.setumei.head())
@@ -156,8 +198,10 @@ class OkadaDataSet:
         top = self.im_list[i][0]
         bottom = self.im_list[i][1]
 
-        train_setumei = self.setumei.drop([top,bottom]).values
-        train_mokuteki = self.mokuteki.drop([top,bottom]).values
+        # train_setumei = self.setumei.drop([top,bottom]).values
+        # train_mokuteki = self.mokuteki.drop([top,bottom]).values
+        train_setumei = self.setumei.drop(range(top,bottom)).values
+        train_mokuteki = self.mokuteki.drop(range(top,bottom)).values
 
         print('-----トレーニングデータ-----:')
         print('train_setumei.shape: {}, train_mokuteki.shape: {}'.format(train_setumei.shape, train_mokuteki.shape))
