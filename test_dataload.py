@@ -15,18 +15,91 @@ import keras
 from keras.datasets import fashion_mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
+from tensorflow.keras.optimizers import RMSprop
 # from keras.optimizers import RMSprop
 # from keras.optimizers import Adam
 # from keras.utils import plot_model
 
 import scipy.stats
+from keras.utils import np_utils #Numpyユーティリティのインポート
 
 
 def main():
     okada_data_set = OkadaDataSet(lst, target_label, drop_labels)
-    i = 0
-    train_setumei, train_mokuteki = okada_data_set.get_traindatas(i)
-    test_setumei, test_mokuteki = okada_data_set.get_testdatas(i)
+    # i = 0
+    sum_acc = 0
+    for i in range(len(lst)):
+        train_setumei, train_mokuteki = okada_data_set.get_traindatas(i)
+        test_setumei, test_mokuteki = okada_data_set.get_testdatas(i)
+
+        # 3値分類．
+        # train_mokuteki = keras.utils.to_categorical(train_mokuteki, 3)
+        # test_mokuteki = keras.utils.to_categorical(test_mokuteki, 3)
+        train_mokuteki = np_utils.to_categorical(train_mokuteki, 3)
+        test_mokuteki = np_utils.to_categorical(test_mokuteki, 3)
+
+        # print('setumei_size:', train_setumei.shape[1])
+        setumei_size = train_setumei.shape[1]
+
+
+        mynn = MyNN(setumei_size)
+        model = mynn.getModel()
+
+
+        #ニューラルネットワークの学習
+        # history = model.fit(x_train, y_train, batch_size=200,epochs=1000,verbose=1,validation_data=(x_test, y_test))
+        # history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=1000, verbose=1, validation_data=(test_setumei, test_mokuteki))
+        history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=1000)
+
+        #ニューラルネットワークの推論
+        # score = model.evaluate(x_test,y_test,verbose=1)
+        # score = model.evaluate(test_setumei, test_mokuteki, verbose=1)
+        score = model.evaluate(test_setumei, test_mokuteki)
+        print("\n")
+        print("Test loss:",score[0])
+        print("Test accuracy:",score[1])
+
+        sum_acc += score[1]
+    print('total test_acc =', (sum_acc/len(lst)))
+    
+
+
+class MyNN:
+    def __init__(self, setumei_size):
+        #ニューラルネットワークの実装①
+        model = Sequential()
+
+        model.add(Dense(50, activation='relu', input_shape=(setumei_size,)))
+        model.add(Dropout(0.2))
+
+        model.add(Dense(50, activation='relu', input_shape=(setumei_size,)))
+        model.add(Dropout(0.2))
+
+        model.add(Dense(50, activation='relu', input_shape=(setumei_size,)))
+        model.add(Dropout(0.2))
+
+        # model.add(Dense(10, activation='softmax'))
+        model.add(Dense(3, activation='softmax'))
+
+        model.summary()
+        print("\n")
+
+        #ニューラルネットワークの実装②
+        model.compile(loss='mean_squared_error',
+                        optimizer=RMSprop(),
+                        metrics=['accuracy'])
+        #勾配法には、Adam(lr=1e-3)という方法もある（らしい）。
+
+        self.model = model
+    
+    def getModel(self):
+        return self.model
+
+
+
+
+
+
 
 class OkadaDataSet:
     def __init__(self,file_lst, target_label, drop_labels):

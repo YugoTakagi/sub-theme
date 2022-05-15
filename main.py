@@ -4,7 +4,7 @@ import numpy as np
 import scipy.stats
 
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models, optimizers
+from tensorflow.keras import datasets, layers, models, optimizers, losses
 
 
 def main():
@@ -81,21 +81,24 @@ class MyFFNN:
         model.add(layers.Dense(10, activation='relu'))
         model.add(layers.Dropout(0.2))
 
+        # softmaxは確率に変換する．
         model.add(layers.Dense(1, activation='softmax'))
 
         self.model = model
 
         #@brier Compile model and Learning
         adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+        # loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         # self.model.compile(optimizer='adam',
         self.model.compile(optimizer=adam,
-                    #   loss='sparse_categorical_crossentropy',
+                    # loss=loss_fn,
+                    # loss='sparse_categorical_crossentropy',
                     # loss='mean_squared_error',
-                    #   loss='mean_absolute_error',
+                    loss='mean_absolute_error',
                     #   loss='mean_absolute_percentage_error',
                     #   loss='mean_squared_logarithmic_error',
                     #   loss='kullback_leibler_divergence',
-                    loss='binary_crossentropy',
+                    # loss='binary_crossentropy',
                     metrics=['accuracy'])
                     # metrics=['accuracy', 'binary_crossentropy'])
                     # metrics=['loss', 'accuracy'])
