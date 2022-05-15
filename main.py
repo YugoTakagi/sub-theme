@@ -4,7 +4,7 @@ import numpy as np
 import scipy.stats
 
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import datasets, layers, models, optimizers
 
 
 def main():
@@ -41,12 +41,17 @@ def main():
         # input_size = len(df.index)
         print(input_size)
 
-        cnn = MyCNN(input_size)
-        model = cnn.getModel()
+        # cnn = MyCNN(input_size)
+        # model = cnn.getModel()
+        ffnn = MyFFNN(input_size)
+        model = ffnn.getModel()
+        # model = MyFFNN(input_size).getModel()
+        
         
 
         # トレーニング開始．
         model.fit(train_datas, train_labels, epochs=15)
+        model.summary()
 
         test_loss, test_acc = model.evaluate(test_datas,  test_labels, verbose=2)
 
@@ -56,6 +61,51 @@ def main():
     # print('sum_acc =', sum_acc)
     print('total test_acc =', (sum_acc/len(lst)))
 
+
+class MyFFNN:
+    def __init__(self, input_size):
+        model = models.Sequential()
+        # self.model.add(layers.Conv2D(32, (3, 1), activation='relu', input_shape=(input_size, 1, 1)))
+        # model.add(layers.Flatten(activation='relu', input_shape=(input_size, 1, 1)))
+        model.add(layers.Flatten(input_shape=(input_size, 1, 1)))
+        # model.add(layers.Dense(50, activation='relu', input_shape=(input_size,)))
+        model.add(layers.Dense(50, activation='relu'))
+        model.add(layers.Dropout(0.2))
+
+        model.add(layers.Dense(50, activation='relu'))
+        model.add(layers.Dropout(0.2))
+
+        # model.add(layers.Dense(50, activation='relu'))
+        # model.add(layers.Dropout(0.2))
+
+        model.add(layers.Dense(10, activation='relu'))
+        model.add(layers.Dropout(0.2))
+
+        model.add(layers.Dense(1, activation='softmax'))
+
+        self.model = model
+
+        #@brier Compile model and Learning
+        adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+        # self.model.compile(optimizer='adam',
+        self.model.compile(optimizer=adam,
+                    #   loss='sparse_categorical_crossentropy',
+                    # loss='mean_squared_error',
+                    #   loss='mean_absolute_error',
+                    #   loss='mean_absolute_percentage_error',
+                    #   loss='mean_squared_logarithmic_error',
+                    #   loss='kullback_leibler_divergence',
+                    loss='binary_crossentropy',
+                    metrics=['accuracy'])
+                    # metrics=['accuracy', 'binary_crossentropy'])
+                    # metrics=['loss', 'accuracy'])
+
+
+    def printing(self):
+        self.model.summary()
+    
+    def getModel(self):
+        return self.model
 
 class MyCNN:
     def __init__(self, input_size):
