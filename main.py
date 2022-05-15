@@ -41,31 +41,46 @@ def main():
         # input_size = len(df.index)
         print(input_size)
 
+        cnn = MyCNN(input_size)
+        model = cnn.getModel()
+        
 
+        # トレーニング開始．
+        model.fit(train_datas, train_labels, epochs=15)
+
+        test_loss, test_acc = model.evaluate(test_datas,  test_labels, verbose=2)
+
+        print("test_acc =", test_acc)
+        sum_acc += test_acc
+
+    # print('sum_acc =', sum_acc)
+    print('total test_acc =', (sum_acc/len(lst)))
+
+
+class MyCNN:
+    def __init__(self, input_size):
         #@brief Criate fundamental model of CNN
-        model = models.Sequential()
-        model.add(layers.Conv2D(32, (3, 1), activation='relu', input_shape=(input_size, 1, 1)))
-        model.add(layers.MaxPooling2D((2, 1)))
-        model.add(layers.Conv2D(64, (3, 1), activation='relu'))
-        model.add(layers.MaxPooling2D((2, 1)))
-        model.add(layers.Conv2D(64, (3, 1), activation='relu'))
+        self.model = models.Sequential()
+        self.model.add(layers.Conv2D(32, (3, 1), activation='relu', input_shape=(input_size, 1, 1)))
+        self.model.add(layers.MaxPooling2D((2, 1)))
+        self.model.add(layers.Conv2D(64, (3, 1), activation='relu'))
+        self.model.add(layers.MaxPooling2D((2, 1)))
+        self.model.add(layers.Conv2D(64, (3, 1), activation='relu'))
 
-        model.add(layers.MaxPooling2D((2, 1)))
-        model.add(layers.Conv2D(64, (3, 1), activation='relu'))
+        self.model.add(layers.MaxPooling2D((2, 1)))
+        self.model.add(layers.Conv2D(64, (3, 1), activation='relu'))
 
         # By using layers.Flatten(), Convert tensor to scoler
-        model.add(layers.Flatten())
-        model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(10, activation='softmax'))
-        model.add(layers.Dense(10, activation='relu'))
-        model.add(layers.Dense(3, activation='softmax'))
-        model.add(layers.Dense(1, activation='sigmoid'))
+        self.model.add(layers.Flatten())
+        self.model.add(layers.Dense(64, activation='relu'))
+        self.model.add(layers.Dense(10, activation='softmax'))
+        self.model.add(layers.Dense(10, activation='relu'))
+        self.model.add(layers.Dense(3, activation='softmax'))
+        self.model.add(layers.Dense(1, activation='sigmoid'))
         # model.add(layers.Dense(3, activation='sigmoid'))
 
-        # model.summary()
-
         #@brier Compile model and Learning
-        model.compile(optimizer='adam',
+        self.model.compile(optimizer='adam',
                     #   loss='sparse_categorical_crossentropy',
                     #   loss='mean_squared_error',
                     #   loss='mean_absolute_error',
@@ -74,17 +89,13 @@ def main():
                     #   loss='kullback_leibler_divergence',
                     loss='binary_crossentropy',
                     metrics=['accuracy'])
+    
+    def printing(self):
+        self.model.summary()
+    
+    def getModel(self):
+        return self.model
 
-
-        model.fit(train_datas, train_labels, epochs=15)
-
-        test_loss, test_acc = model.evaluate(test_datas,  test_labels, verbose=2)
-
-        print("test_acc =", test_acc)
-        sum_acc += test_acc
-
-    print('sum_acc =', sum_acc)
-    print('sum_acc =', (sum_acc/len(lst)))
 
 
 # データセットに読み込むファイル名．
