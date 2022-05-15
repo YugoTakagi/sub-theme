@@ -44,14 +44,14 @@ def main():
         setumei_size = train_setumei.shape[1]
 
         # > MLP
-        mynn = MyNN(setumei_size)
-        model = mynn.getModel()
+        # mynn = MyNN(setumei_size)
+        # model = mynn.getModel()
 
         # > CNN
-        # mycnn = MyCNN(setumei_size)
-        # model = mycnn.getModel()
-        # train_setumei = train_setumei.reshape(int(train_setumei.size/train_setumei[0].size), train_setumei[0].size, 1, 1)
-        # test_setumei = test_setumei.reshape(int(test_setumei.size/test_setumei[0].size), test_setumei[0].size, 1, 1)
+        mycnn = MyCNN(setumei_size)
+        model = mycnn.getModel()
+        train_setumei = train_setumei.reshape(int(train_setumei.size/train_setumei[0].size), train_setumei[0].size, 1, 1)
+        test_setumei = test_setumei.reshape(int(test_setumei.size/test_setumei[0].size), test_setumei[0].size, 1, 1)
 
 
         #ニューラルネットワークの学習
@@ -88,7 +88,7 @@ class MyNN:
         model.add(Dropout(0.2))
 
         # model.add(Dense(10, activation='softmax'))
-        model.add(Dense(3, activation='softmax'))
+        model.add(Dense(3, activation='softmax')) # for 3class
 
         model.summary()
         print("\n")
@@ -121,19 +121,22 @@ class MyCNN:
         # By using layers.Flatten(), Convert tensor to scoler
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(64, activation='relu'))
-        self.model.add(layers.Dense(10, activation='softmax'))
+        self.model.add(Dropout(0.2))
+
         self.model.add(layers.Dense(10, activation='relu'))
+        self.model.add(Dropout(0.2))
+
         self.model.add(layers.Dense(3, activation='softmax'))
 
         #@brier Compile model and Learning
         self.model.compile(optimizer='adam',
                     #   loss='sparse_categorical_crossentropy',
-                    loss='mean_squared_error',
+                    # loss='mean_squared_error',
                     #   loss='mean_absolute_error',
                     #   loss='mean_absolute_percentage_error',
                     #   loss='mean_squared_logarithmic_error',
                     #   loss='kullback_leibler_divergence',
-                    # loss='binary_crossentropy',
+                    loss='binary_crossentropy',
                     metrics=['accuracy'])
 
     
