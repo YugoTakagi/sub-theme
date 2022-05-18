@@ -11,7 +11,9 @@ from sklearn.metrics import accuracy_score
 import numpy as np
 import matplotlib.pyplot as plt
 
-import keras
+# import keras
+from tensorflow import keras
+
 from keras.datasets import fashion_mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
@@ -40,8 +42,10 @@ class OkadaDataSet:
         # 説明変数の設定．
         self.setumei = DataFrame(okada_data_set.drop(drop_labels, axis=1))
         ### 説明変数ごとにz化（標準化：平均0，分散1）
-        self.setumei = scipy.stats.zscore(self.setumei)
+        # self.setumei = scipy.stats.zscore(self.setumei)
+        self.setumei = pd.DataFrame( scipy.stats.zscore(self.setumei) )
         ### NaNがある列を削除．
+        print(type(self.setumei))
         self.setumei = self.setumei.dropna(axis='columns')
         print("-----説明変数--------")
         print('shape:', self.setumei.shape)

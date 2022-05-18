@@ -30,6 +30,8 @@ from data.okada_dataset import OkadaDataSet
 
 import glob
 
+print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+
 # データセットのラベルを設定．
 target_label = 'SS_ternary'
 # target_label = 'TC_ternary'
@@ -107,8 +109,6 @@ def main():
     
     print('Model:', model_name)
     print('target_label:', target_label)
-
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     
 
 
