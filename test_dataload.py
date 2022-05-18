@@ -30,7 +30,9 @@ def main():
     okada_data_set = OkadaDataSet(lst, target_label, drop_labels)
     # i = 0
     sum_acc = 0
+    accs = []
     for i in range(len(lst)):
+        print('% ({}/{})'.format(i, len(lst)))
         train_setumei, train_mokuteki = okada_data_set.get_traindatas(i)
         test_setumei, test_mokuteki = okada_data_set.get_testdatas(i)
 
@@ -44,14 +46,16 @@ def main():
         setumei_size = train_setumei.shape[1]
 
         # > MLP
-        # mynn = MyNN(setumei_size)
-        # model = mynn.getModel()
+        mynn = MyNN(setumei_size)
+        model = mynn.getModel()
 
         # > CNN
-        mycnn = MyCNN(setumei_size)
-        model = mycnn.getModel()
-        train_setumei = train_setumei.reshape(int(train_setumei.size/train_setumei[0].size), train_setumei[0].size, 1, 1)
-        test_setumei = test_setumei.reshape(int(test_setumei.size/test_setumei[0].size), test_setumei[0].size, 1, 1)
+        # mycnn = MyCNN(setumei_size)
+        # model = mycnn.getModel()
+        # # data[0].size: 1415, data.shape[1]: 1415
+        # # data.size: 2596525, data.shape[0]: 1835
+        # train_setumei = train_setumei.reshape(train_setumei.shape[0], train_setumei.shape[1], 1, 1)
+        # test_setumei = test_setumei.reshape(test_setumei.shape[0], test_setumei.shape[1], 1, 1)
 
 
         #ニューラルネットワークの学習
@@ -61,15 +65,20 @@ def main():
         # history = model.fit(train_setumei, train_mokuteki, batch_size=200, epochs=200)
 
         #ニューラルネットワークの推論
-        # score = model.evaluate(x_test,y_test,verbose=1)
+        # score = model.evaluate(x_test,y_test,verbose=1)1
         # score = model.evaluate(test_setumei, test_mokuteki, verbose=1)
         score = model.evaluate(test_setumei, test_mokuteki)
         print("\n")
-        print("Test loss:",score[0])
-        print("Test accuracy:",score[1])
+        print("Test loss:", score[0])
+        print("Test accuracy:", score[1])
 
         sum_acc += score[1]
+        accs.append(score[1])
+    
     print('total test_acc =', (sum_acc/len(lst)))
+
+    for i in range(len(lst)):
+        print('({}) when test file is \'{}\', accuracy : {}'.format(i, lst[i], accs[i]))
     
 
 
@@ -127,6 +136,9 @@ class MyCNN:
         self.model.add(Dropout(0.2))
 
         self.model.add(layers.Dense(3, activation='softmax'))
+
+        self.model.summary()
+        print("\n")
 
         #@brier Compile model and Learning
         self.model.compile(optimizer='adam',
@@ -217,6 +229,8 @@ class OkadaDataSet:
 
 # データセットのラベルを設定．
 target_label = 'SS_ternary'
+# target_label = 'TC_ternary'
+# target_label = 'TS_ternary'
 drop_labels = ['start(exchange)[ms]', 'end(system)[ms]', 'end(exchange)[ms]', \
                 'kinectstart(exchange)[ms]', 'kinectend(system)[ms]', 'kinectend(exchange)[ms]', \
                 'SS_ternary', \
