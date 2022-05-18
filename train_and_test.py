@@ -68,10 +68,12 @@ def main():
         setumei_size = train_setumei.shape[1]
 
         # > MLP
+        model_name = 'MLP'
         mynn = MyNN(setumei_size)
         model = mynn.getModel()
 
         # > CNN
+        # model_name = 'CNN'
         # mycnn = MyCNN(setumei_size)
         # model = mycnn.getModel()
         # # data[0].size: 1415, data.shape[1]: 1415
@@ -97,10 +99,14 @@ def main():
         sum_acc += score[1]
         accs.append(score[1])
     
-    print('total test_acc =', (sum_acc/len(lst)))
 
+    # 結果のまとめ
+    print('total mean test_acc =', (sum_acc/len(lst)))
     for i in range(len(lst)):
         print('({}) when test file is \'{}\', accuracy : {}'.format(i, names[i], accs[i]))
+    
+    print('Model:', model_name)
+    print('target_label:', target_label)
     
 
 
