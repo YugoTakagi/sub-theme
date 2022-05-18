@@ -7,7 +7,7 @@
 # from sklearn import svm
 # from sklearn.model_selection import train_test_split
 # from sklearn.metrics import accuracy_score
-
+import tensorflow as tf
 import numpy as np
 # import matplotlib.pyplot as plt
 
@@ -107,6 +107,8 @@ def main():
     
     print('Model:', model_name)
     print('target_label:', target_label)
+
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     
 
 
