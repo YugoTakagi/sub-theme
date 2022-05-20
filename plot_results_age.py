@@ -29,45 +29,82 @@ def main():
     df = pd.read_csv(path)
 
     status = df['age'].values
+    num_files = len(status)
+
+    xlabels = np.arange(20, 80, 10)
 
     fig = plt.figure()
     axs = []
-
-    for j in range(len(df.columns)): # columnsごとのグラフが欲しい．
-        if df.columns[j] == 'age':
+    for l in range(len(df.columns)): # columnsごとのグラフが欲しい．
+        if df.columns[l] == 'age':
             continue
+
         else:
-            axs.append( fig.add_subplot(2, 3, j) ) # 行，列，場所．
+            axs.append( fig.add_subplot(2, 3, l) ) # 行，列，場所．
+            points = []
 
-            # ages = []
-            # sexs = []
-            # values = []
-            for i in range(len(status)): # ファイル分のデータにアクセス．
-                ages = status[i][1:3]
-                sexs = status[i][0]
-                values = df[df.columns[df.columns != 'age']].iloc[i].values
-                # print(i, 'values', values)
+            for t_age in xlabels: # 各columns毎の年齢別データが欲しい．
+                
+                age_values = []
+                age_values.append(t_age)
+                for i in range(num_files):
+                    _age = int(status[i][1:3])
+                    if t_age == _age:
+                        age_values.append( df.iloc[i].values[l] )
 
-                # 描画処理．
-                if sexs == 'M':
-                    # print('label: {}, ages: {}, value: {}'.format(df.columns[j], ages, values[j-1]))
-                    # axs[j-1].plot(ages, values[j-1], '.', label=df.columns[j], color='skyblue')
-                    axs[j-1].plot(ages, values[j-1], '.', color='#1f77b4') # color := tab:blue
-                    # axs[j-1].plot(ages, values[j-1], '.', color='dodgerblue')
-                elif sexs == 'F':
-                    # print('label: {}, ages: {}, value: {}'.format(df.columns[j], ages, values[j-1]))
-                    # axs[j-1].plot(ages, values[j-1], '.', label=df.columns[j], color='tomato')
-                    axs[j-1].plot(ages, values[j-1], '.', color='#ff7f0e') # color := tab:orange
-                    # axs[j-1].plot(ages, values[j-1], '.', color='tomato')
-                else:
-                    print('err')
-        
-            axs[j-1].set_title(str(df.columns[j]))
-            axs[j-1].set_ylim(0, 1)
+                # print(age_values[1:])
+                points.append( age_values[1:] )
+            
+            axs[l-1].boxplot(points)
+            axs[l-1].set_title(str(df.columns[l]))
+            axs[l-1].set_ylim(0, 1)
+            axs[l-1].set_xticklabels(xlabels)
             # axs[j-1].legend()
-            axs[j-1].grid(':')
-    
+            axs[l-1].grid(':')
+
     plt.show()
+
+
+
+
+
+
+
+    # for j in range(len(df.columns)): # columnsごとのグラフが欲しい．
+    #     if df.columns[j] == 'age':
+    #         continue
+    #     else:
+    #         
+
+    #         # ages = []
+    #         # sexs = []
+    #         # values = []
+    #         for i in range(len(status)): # ファイル分のデータにアクセス．
+    #             ages = status[i][1:3]
+    #             sexs = status[i][0]
+    #             values = df[df.columns[df.columns != 'age']].iloc[i].values
+    #             # print(i, 'values', values)
+
+    #             # 描画処理．
+    #             if sexs == 'M':
+    #                 # print('label: {}, ages: {}, value: {}'.format(df.columns[j], ages, values[j-1]))
+    #                 # axs[j-1].plot(ages, values[j-1], '.', label=df.columns[j], color='skyblue')
+    #                 axs[j-1].plot(ages, values[j-1], '.', color='#1f77b4') # color := tab:blue
+    #                 # axs[j-1].plot(ages, values[j-1], '.', color='dodgerblue')
+    #             elif sexs == 'F':
+    #                 # print('label: {}, ages: {}, value: {}'.format(df.columns[j], ages, values[j-1]))
+    #                 # axs[j-1].plot(ages, values[j-1], '.', label=df.columns[j], color='tomato')
+    #                 axs[j-1].plot(ages, values[j-1], '.', color='#ff7f0e') # color := tab:orange
+    #                 # axs[j-1].plot(ages, values[j-1], '.', color='tomato')
+    #             else:
+    #                 print('err')
+        
+    #         axs[j-1].set_title(str(df.columns[j]))
+    #         axs[j-1].set_ylim(0, 1)
+    #         # axs[j-1].legend()
+    #         axs[j-1].grid(':')
+    
+    # plt.show()
 
 
 
