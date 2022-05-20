@@ -8,6 +8,10 @@ python-code for 副テーマ.
 
 
 
+★ vscode with language server.
+⌘ Shift P (View > Command Palette)
+> Python: Select Interpreter
+
 
 
 
