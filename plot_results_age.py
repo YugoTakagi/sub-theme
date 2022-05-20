@@ -1,12 +1,13 @@
-import sys
-sys.path.append('~/Nextcloud/AIR-JAIST/00_M1-ワーク/M1_副テーマ/岡田研/sub-theme')
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import pandas as pd
 import torch
 
 import glob
 
+import sys
+sys.path.append('~/Nextcloud/AIR-JAIST/00_M1-ワーク/M1_副テーマ/岡田研/sub-theme')
 from data.okada_dataset import OkadaDataSet
 
 # データセットのラベルを設定．
@@ -26,49 +27,48 @@ drop_labels = ['start(exchange)[ms]', 'end(system)[ms]', 'end(exchange)[ms]', \
 def main():
     path = '../results.csv'
     df = pd.read_csv(path)
-    #df.plot()
-    #plt.show()
 
-    dataset_dir = '../ws/Hazumi1902-master/dumpfiles/*'
-    lst = sorted( glob.glob(dataset_dir) )
-    names = [r.split('/')[-1] for r in lst]
-    print('-> Load csv:\n', lst)
+    status = df['age'].values
 
-    okada_data_set = OkadaDataSet(lst, target_label, drop_labels)
+    fig = plt.figure()
+    axs = []
 
-    lhs_setumei, lhs_mokuteki = okada_data_set.get_testdatas(0)
-    rhs_setumei, rhs_mokuteki = okada_data_set.get_testdatas(2)
+    for j in range(len(df.columns)): # columnsごとのグラフが欲しい．
+        if df.columns[j] == 'age':
+            continue
+        else:
+            axs.append( fig.add_subplot(2, 3, j) ) # 行，列，場所．
+
+            # ages = []
+            # sexs = []
+            # values = []
+            for i in range(len(status)): # ファイル分のデータにアクセス．
+                ages = status[i][1:3]
+                sexs = status[i][0]
+                values = df[df.columns[df.columns != 'age']].iloc[i].values
+                # print(i, 'values', values)
+
+                # 描画処理．
+                if sexs == 'M':
+                    # print('label: {}, ages: {}, value: {}'.format(df.columns[j], ages, values[j-1]))
+                    # axs[j-1].plot(ages, values[j-1], '.', label=df.columns[j], color='skyblue')
+                    axs[j-1].plot(ages, values[j-1], '.', color='#1f77b4') # color := tab:blue
+                    # axs[j-1].plot(ages, values[j-1], '.', color='dodgerblue')
+                elif sexs == 'F':
+                    # print('label: {}, ages: {}, value: {}'.format(df.columns[j], ages, values[j-1]))
+                    # axs[j-1].plot(ages, values[j-1], '.', label=df.columns[j], color='tomato')
+                    axs[j-1].plot(ages, values[j-1], '.', color='#ff7f0e') # color := tab:orange
+                    # axs[j-1].plot(ages, values[j-1], '.', color='tomato')
+                else:
+                    print('err')
+        
+            axs[j-1].set_title(str(df.columns[j]))
+            axs[j-1].set_ylim(0, 1)
+            # axs[j-1].legend()
+            axs[j-1].grid(':')
     
+    plt.show()
 
-    num_setumei = lhs_setumei.shape[1]
-
-    # 各要素のL1損失を計算．
-    device = torch.device('cpu') 
-    l1_loss = torch.nn.L1Loss().to(device)
-
-    lhs_setumei = torch.from_numpy(lhs_setumei.astype(np.float32)).clone()
-    rhs_setumei = torch.from_numpy(rhs_setumei.astype(np.float32)).clone()
-
-    # print_(lhs_setumei[:, 0]) : 0番目の要素列が取れる．
-    # x print_(lhs_setumei[0, :]) : 0番目の要素列が取れる．
-    # print(lhs_setumei.shape)
-    # print(lhs_setumei[:, 0].shape)
-    # print(lhs_setumei[0, :].shape)
-
-    l1s = []
-    for i in range(num_setumei):
-        num_row = min(lhs_setumei[:, i].shape[0], rhs_setumei[:, i].shape[0]) - 1
-        # print(num_row)
-        # print(lhs_setumei[0:num_row, i].shape)
-        # print(rhs_setumei[0:num_row, i].shape)
-
-        l1s.append( l1_loss(lhs_setumei[0:num_row, i], rhs_setumei[0:num_row, i]) )
-
-    #plt.plot(l1s)
-    #plt.show()
-
-    print('max index:', l1s.index(max(l1s)))
-    print(okada_data_set.setumei.columns[l1s.index(max(l1s))])
 
 
 
